@@ -1,58 +1,93 @@
 <template>
-  <div class="hello">
+  <div class="hello container">
+    <img alt="Vue logo" src="../assets/logo.png" />
     <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+    <div class="mt-5 d-flex">
+      <input
+        type="text"
+        placeholder="Write a note.."
+        class="form-control mr-3"
+        v-model="task"
+      />
+      <b-button block id="add-task" @click="addTask" class="w-25">Add</b-button>
+    </div>
+    <div v-if="tasks && tasks.length > 0" class="grid-task mt-5">
+      <Task v-for="(task, index) in tasks" 
+        :key="index" 
+        :dark="task.isDark" 
+        :text="task.text"
+        :index="index" 
+        @removeTask="handleRemoveTask"></Task>
+    </div>
+    <h1 class="mt-5" v-else>You have no pending Notes or Tasks, add one to start</h1>
   </div>
 </template>
 
 <script>
+import Task from "./Task";
+
+const KEY_TASK='tasks';
+
 export default {
-  name: 'HelloWorld',
+  name: "HelloWorld",
   props: {
-    msg: String
+    msg: String,
+  },
+  components: {
+    Task
+  },
+  data() {
+    return {
+      tasks: [],
+      task: "",
+      isDark: true
+    };
+  },
+  created() {
+    this.tasks = JSON.parse(localStorage.getItem(KEY_TASK)) || []
+  },
+  methods: {
+    addTask() {
+      const newTask = {
+        text: this.task,
+        isDark: this.isDark
+      }
+      this.tasks.push(newTask)
+      this.saveToLocalStorage(this.tasks)
+      this.clearTask()
+    },
+    clearTask() {
+      this.task = ""
+      this.isDark = !this.isDark
+    },
+    handleRemoveTask(index) {
+      this.tasks.splice(index, 1);
+      this.saveToLocalStorage(this.tasks)
+    },
+    saveToLocalStorage(tasks) {
+      localStorage.setItem(KEY_TASK, JSON.stringify(tasks))
+    }
   }
-}
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+<style scoped lang="scss">
+.hello {
+  #add-task {
+    background-color: #41b883;
+    border-color: #41b883;
+    transition: 0.5s all;
+
+    &:hover {
+      background-color: #34495e;
+    }
+  }
+
+  .grid-task {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+  }
 }
 </style>
